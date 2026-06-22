@@ -1009,9 +1009,13 @@ class GenerationConfig(PushToHubMixin):
         config_path = str(config_path)
 
         is_local = os.path.exists(config_path)
-        if os.path.isfile(os.path.join(subfolder, config_path)):
+        if os.path.isfile(config_path):
             # Special case when config_path is a local file
             resolved_config_file = config_path
+            is_local = True
+        elif os.path.isfile(os.path.join(subfolder, config_path)):
+            # Special case when config_path is a local file
+            resolved_config_file = os.path.join(subfolder, config_path)
             is_local = True
         else:
             configuration_file = config_file_name
@@ -1809,26 +1813,9 @@ class ContinuousBatchingConfig:
         # Warn about deprecated arguments
         if self.use_default_compile_configs is not None:  # Deprecated in 5.11
             if self.use_default_compile_configs:
-                level_msg = "setting default_compile_level to 3. Consider using a lower level for faster warmup time."
+                level_msg = "setting default_compile_level to 3. Consider using a lower level for faster warmup."
                 self.default_compile_level = 3
             else:
                 level_msg = "setting default_compile_level to 0."
                 self.default_compile_level = 0
-            logger.warning(
-                "use_default_compile_configs is deprecated: please use default_compile_level instead. For backwards "
-                f"compatibility, {level_msg}"
-            )
-
-    @property
-    def cuda_graph_booleans(self) -> tuple[bool, bool]:
-        """The cuda graph booleans for the varlen and decode paths."""
-        if self.use_cuda_graph is None:
-            return False, False
-        if isinstance(self.use_cuda_graph, bool):
-            return self.use_cuda_graph, self.use_cuda_graph
-        return self.use_cuda_graph
-
-    @property
-    def fallback_max_blocks_per_request(self) -> int:
-        """Fallback if no user-hint is given and decode path is available."""
-        return 32
+            logger.warning(f"use_default_compile_configs is deprecated. {level_msg}")
